@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/prometheus/prometheus/pkg/rulefmt"
 	"github.com/spf13/cobra"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -186,6 +187,11 @@ func (rf *ruleFetcher) refresh(ctx context.Context, cms []*v1.ConfigMap) error {
 	for _, cm := range cms {
 		glog.V(4).Infof("Processing %s/%s", cm.ObjectMeta.Namespace, cm.ObjectMeta.Name)
 		for fn, content := range cm.Data {
+			if _, errs := rulefmt.Parse([]byte(content)); len(errs) > 0 {
+				glog.Errorf("Skipping invalid rule file: %s/%s/%s: %v", cm.ObjectMeta.Namespace, cm.ObjectMeta.Name, fn, errs)
+				continue
+			}
+
 			fp := filepath.Join(tmpdir, fmt.Sprintf("%s_%s_%s", cm.ObjectMeta.Namespace, cm.ObjectMeta.Name, fn))
 			glog.V(6).Infof("Writing file %s", fp)
 			if err := ioutil.WriteFile(fp, []byte(content), 0666); err != nil {
