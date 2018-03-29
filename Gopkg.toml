@@ -24,23 +24,6 @@
 #   go-tests = true
 #   unused-packages = true
 
-
-[[constraint]]
-  name = "github.com/go-kit/kit"
-  version = "0.6.0"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/improbable-eng/thanos"
-
-[[constraint]]
-  name = "github.com/oklog/run"
-  version = "1.0.0"
-
-[[constraint]]
-  name = "gopkg.in/alecthomas/kingpin.v2"
-  version = "2.2.6"
-
 [[constraint]]
   name = "k8s.io/client-go"
   version = "6.0.0"
