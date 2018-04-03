@@ -54,7 +54,6 @@ var tweakOptions internalinterfaces.TweakListOptionsFunc = func(o *metav1.ListOp
 
 func main() {
 	cmd := newCommand()
-	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 
 	cmd.PersistentFlags().StringVar(&cfgFile, "config-file", "", "config file watched by the reloader")
 	cmd.PersistentFlags().StringVar(&cfgSubstFile, "config-envsubst-file", "", "output file for environment variable substituted config file")
@@ -63,7 +62,10 @@ func main() {
 	cmd.PersistentFlags().StringVar(&reloadURLFlag, "reload-url", "http://127.0.0.1:9090/-/reload", "reload URL to trigger Prometheus reload on")
 	cmd.PersistentFlags().DurationVar(&reloadInterval, "reload-interval", 10*time.Second, "interval between reloading rules")
 
-	//flag.Parse()
+	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
+
+	flag.CommandLine.Parse([]string{})
+	cmd.PersistentFlags().Parse(os.Args)
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
