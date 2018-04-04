@@ -126,7 +126,8 @@ type ruleFetcher struct {
 	cmLister corev1.ConfigMapLister
 	outDir   string
 
-	lastHash map[string]map[string][sha256.Size]byte
+	lastHash           map[string]map[string][sha256.Size]byte
+	lastConfigMapCount int
 }
 
 func newRuleFetcher(client *kubernetes.Clientset, cmLister corev1.ConfigMapLister, outDir string) *ruleFetcher {
@@ -210,6 +211,10 @@ func (rf *ruleFetcher) refresh(ctx context.Context, cms []*v1.ConfigMap) error {
 }
 
 func (rf *ruleFetcher) configMapsChanged(cms []*v1.ConfigMap) (bool, error) {
+	if rf.lastConfigMapCount != len(cms) {
+		// A configmap has been added or removed
+		return true, nil
+	}
 	for _, cm := range cms {
 		lastHash, ok := rf.lastHash[cm.Namespace][cm.Name]
 		if !ok {
@@ -245,5 +250,6 @@ func (rf *ruleFetcher) updateLastHash(cms []*v1.ConfigMap) error {
 
 		rf.lastHash[cm.Namespace][cm.Name] = h
 	}
+	rf.lastConfigMapCount = len(cms)
 	return nil
 }
