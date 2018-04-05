@@ -126,7 +126,8 @@ type ruleFetcher struct {
 	cmLister corev1.ConfigMapLister
 	outDir   string
 
-	lastHash [sha256.Size]byte
+	lastHash           map[string]map[string][sha256.Size]byte
+	lastConfigMapCount int
 }
 
 func newRuleFetcher(client *kubernetes.Clientset, cmLister corev1.ConfigMapLister, outDir string) *ruleFetcher {
@@ -134,6 +135,7 @@ func newRuleFetcher(client *kubernetes.Clientset, cmLister corev1.ConfigMapListe
 		client:   client,
 		cmLister: cmLister,
 		outDir:   outDir,
+		lastHash: make(map[string]map[string][sha256.Size]byte),
 	}
 }
 
@@ -145,13 +147,11 @@ func (rf *ruleFetcher) Refresh(ctx context.Context) error {
 	}
 	glog.V(4).Infof("Found %d configmaps.", len(cms))
 
-	b, err := json.Marshal(cms)
+	changed, err := rf.configMapsChanged(cms)
 	if err != nil {
-		return err
+		return fmt.Errorf("couldn't determine if configmaps changed: %v", err)
 	}
-
-	h := sha256.Sum256(b)
-	if rf.lastHash == h {
+	if !changed {
 		glog.V(2).Infof("Config unchanged")
 		return nil
 	}
@@ -172,7 +172,10 @@ func (rf *ruleFetcher) Refresh(ctx context.Context) error {
 
 	glog.V(2).Infof("Reloaded prometheus config.")
 
-	rf.lastHash = h
+	err = rf.updateLastHash(cms)
+	if err != nil {
+		return fmt.Errorf("couldn't update last hash: %v", err)
+	}
 	return nil
 }
 
@@ -205,4 +208,48 @@ func (rf *ruleFetcher) refresh(ctx context.Context, cms []*v1.ConfigMap) error {
 		return err
 	}
 	return os.Rename(tmpdir, rf.outDir)
+}
+
+func (rf *ruleFetcher) configMapsChanged(cms []*v1.ConfigMap) (bool, error) {
+	if rf.lastConfigMapCount != len(cms) {
+		// A configmap has been added or removed
+		return true, nil
+	}
+	for _, cm := range cms {
+		lastHash, ok := rf.lastHash[cm.Namespace][cm.Name]
+		if !ok {
+			// ConfigMap is new
+			return true, nil
+		}
+
+		b, err := json.Marshal(cm)
+		if err != nil {
+			return false, fmt.Errorf("couldn't marshal configmap: %v", err)
+		}
+
+		h := sha256.Sum256(b)
+		if lastHash != h {
+			// ConfigMap has changed
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (rf *ruleFetcher) updateLastHash(cms []*v1.ConfigMap) error {
+	for _, cm := range cms {
+		b, err := json.Marshal(cm)
+		if err != nil {
+			return fmt.Errorf("couldn't marshal configmap: %v", err)
+		}
+		h := sha256.Sum256(b)
+
+		if _, ok := rf.lastHash[cm.Namespace]; !ok {
+			rf.lastHash[cm.Namespace] = make(map[string][sha256.Size]byte)
+		}
+
+		rf.lastHash[cm.Namespace][cm.Name] = h
+	}
+	rf.lastConfigMapCount = len(cms)
+	return nil
 }
