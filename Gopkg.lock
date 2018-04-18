@@ -267,8 +267,8 @@
 [[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
-  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
-  version = "v1.0.0"
+  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "master"
@@ -525,6 +525,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dfe7207dd4793b9d0ed41328cbbceaf2bcd6013ba78931671e839926f649ce17"
+  inputs-digest = "7b4f29fa0637bbc68b5b312a65da3cef269977eee8c9fe81195a72f22e1e2899"
   solver-name = "gps-cdcl"
   solver-version = 1
