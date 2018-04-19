@@ -119,7 +119,6 @@ func newCommand() *cobra.Command {
 					return nil
 				}
 			}
-			return nil
 		},
 	}
 	return rootCmd
@@ -156,12 +155,12 @@ func (rf *ruleFetcher) Refresh(ctx context.Context) error {
 		return fmt.Errorf("couldn't determine if configmaps changed: %v", err)
 	}
 	if !changed {
-		glog.V(2).Infof("Config unchanged")
+		glog.V(3).Infof("Config unchanged")
 		return nil
 	}
 
 	glog.V(2).Infof("Config changed. Updating rules.")
-	if err := rf.refresh(ctx, cms); err != nil {
+	if err = rf.refresh(ctx, cms); err != nil {
 		return fmt.Errorf("couldn't refresh rules: %v", err)
 	}
 
