@@ -6,7 +6,7 @@ into a single configuration file for Prometheus.
 
 ## What problem does it solve?
 
-Prometheus requires all recording and alerting rules to be specified in "rule_files" it parses.
+Prometheus requires all recording and alerting rules to be specified in [rule_files](https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/) it parses.
 When running on Kubernetes, these are usually stored in ConfigMaps inside the Prometheus namespace which are mounted into the Prometheus Pods at runtime.
 
 If a Prometheus instance is meant to scrape targets across multiple namespaces, owned by multiple teams, this poses a problem if those owners wish
