@@ -6,49 +6,49 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestCheckConfigChanged(t *testing.T) {
 	rf := newRuleFetcher(nil, nil, "")
 
-	test1 := v1.ConfigMap{
+	test1 := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test1",
 			Namespace: "test_namespace_1",
 		},
 	}
 
-	test2 := v1.ConfigMap{
+	test2 := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test2",
 			Namespace: "test_namespace_1",
 		},
 	}
 
-	test3 := v1.ConfigMap{
+	test3 := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test3",
 			Namespace: "test_namespace_3",
 		},
 	}
 
-	cms := []*v1.ConfigMap{&test1}
+	cms := []*corev1.ConfigMap{&test1}
 	changed, _ := rf.configMapsChanged(cms)
 	assert.True(t, changed, "Configmap should be changed on new config.")
 	rf.updateLastHash(cms)
 	changed, _ = rf.configMapsChanged(cms)
 	assert.False(t, changed, "Config should be unchanged.")
 
-	cms = []*v1.ConfigMap{&test2, &test1}
+	cms = []*corev1.ConfigMap{&test2, &test1}
 	changed, _ = rf.configMapsChanged(cms)
 	assert.True(t, changed, "Configmap should be changed on new config.")
 	rf.updateLastHash(cms)
 	changed, _ = rf.configMapsChanged(cms)
 	assert.False(t, changed, "Config should be unchanged.")
 
-	cms = []*v1.ConfigMap{&test3, &test1}
+	cms = []*corev1.ConfigMap{&test3, &test1}
 	changed, _ = rf.configMapsChanged(cms)
 	assert.True(t, changed, "Configmap should be changed on new config.")
 	rf.updateLastHash(cms)
@@ -59,14 +59,14 @@ func TestCheckConfigChanged(t *testing.T) {
 func TestUpdateLastHash(t *testing.T) {
 	rf := newRuleFetcher(nil, nil, "")
 
-	test1 := v1.ConfigMap{
+	test1 := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test1",
 			Namespace: "test_namespace_1",
 		},
 	}
 
-	test1changed := v1.ConfigMap{
+	test1changed := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test1",
 			Namespace: "test_namespace_1",
@@ -76,42 +76,42 @@ func TestUpdateLastHash(t *testing.T) {
 		},
 	}
 
-	test2 := v1.ConfigMap{
+	test2 := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test2",
 			Namespace: "test_namespace_1",
 		},
 	}
 
-	test3 := v1.ConfigMap{
+	test3 := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test3",
 			Namespace: "test_namespace_3",
 		},
 	}
 
-	cms := []*v1.ConfigMap{&test1}
+	cms := []*corev1.ConfigMap{&test1}
 	rf.updateLastHash(cms)
 	assert.Equal(t, 1, rf.lastConfigMapCount, "lastConfigMapCount should be 1")
 	assert.NotEmpty(t, rf.lastHash[test1.Namespace], "test1 namespace should not be empty")
 	test1bytes, _ := json.Marshal(test1)
 	assert.Equal(t, sha256.Sum256(test1bytes), rf.lastHash[test1.Namespace][test1.Name], "Test 1 shasum incorrect")
 
-	cms = []*v1.ConfigMap{&test2, &test1}
+	cms = []*corev1.ConfigMap{&test2, &test1}
 	rf.updateLastHash(cms)
 	assert.Equal(t, 2, rf.lastConfigMapCount, "lastConfigMapCount should be 1")
 	assert.NotEmpty(t, rf.lastHash[test2.Namespace], "test1 namespace should not be empty")
 	test2bytes, _ := json.Marshal(test2)
 	assert.Equal(t, sha256.Sum256(test2bytes), rf.lastHash[test2.Namespace][test2.Name], "Test 2 shasum incorrect")
 
-	cms = []*v1.ConfigMap{&test3, &test1}
+	cms = []*corev1.ConfigMap{&test3, &test1}
 	rf.updateLastHash(cms)
 	assert.Equal(t, 2, rf.lastConfigMapCount, "lastConfigMapCount should be 1")
 	assert.NotEmpty(t, rf.lastHash[test3.Namespace], "test1 namespace should not be empty")
 	test3bytes, _ := json.Marshal(test3)
 	assert.Equal(t, sha256.Sum256(test3bytes), rf.lastHash[test3.Namespace][test3.Name], "Test 1 shasum incorrect")
 
-	cms = []*v1.ConfigMap{&test3, &test1changed}
+	cms = []*corev1.ConfigMap{&test3, &test1changed}
 	rf.updateLastHash(cms)
 	assert.Equal(t, 2, rf.lastConfigMapCount, "lastConfigMapCount should be 1")
 	test1changedbytes, _ := json.Marshal(test1changed)

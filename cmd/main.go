@@ -29,13 +29,13 @@ import (
 	"github.com/golang/glog"
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 	"github.com/spf13/cobra"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	informersv1 "k8s.io/client-go/informers"
 	"k8s.io/client-go/informers/internalinterfaces"
 	"k8s.io/client-go/kubernetes"
-	corev1 "k8s.io/client-go/listers/core/v1"
+	corev1listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -126,14 +126,14 @@ func newCommand() *cobra.Command {
 
 type ruleFetcher struct {
 	client   *kubernetes.Clientset
-	cmLister corev1.ConfigMapLister
+	cmLister corev1listers.ConfigMapLister
 	outDir   string
 
 	lastHash           map[string]map[string][sha256.Size]byte
 	lastConfigMapCount int
 }
 
-func newRuleFetcher(client *kubernetes.Clientset, cmLister corev1.ConfigMapLister, outDir string) *ruleFetcher {
+func newRuleFetcher(client *kubernetes.Clientset, cmLister corev1listers.ConfigMapLister, outDir string) *ruleFetcher {
 	return &ruleFetcher{
 		client:   client,
 		cmLister: cmLister,
@@ -182,7 +182,7 @@ func (rf *ruleFetcher) Refresh(ctx context.Context) error {
 	return nil
 }
 
-func (rf *ruleFetcher) refresh(ctx context.Context, cms []*v1.ConfigMap) error {
+func (rf *ruleFetcher) refresh(ctx context.Context, cms []*corev1.ConfigMap) error {
 	tmpdir := rf.outDir + ".tmp"
 
 	if err := os.MkdirAll(tmpdir, 0777); err != nil {
@@ -213,7 +213,7 @@ func (rf *ruleFetcher) refresh(ctx context.Context, cms []*v1.ConfigMap) error {
 	return os.Rename(tmpdir, rf.outDir)
 }
 
-func (rf *ruleFetcher) configMapsChanged(cms []*v1.ConfigMap) (bool, error) {
+func (rf *ruleFetcher) configMapsChanged(cms []*corev1.ConfigMap) (bool, error) {
 	if rf.lastConfigMapCount != len(cms) {
 		// A configmap has been added or removed
 		return true, nil
@@ -239,7 +239,7 @@ func (rf *ruleFetcher) configMapsChanged(cms []*v1.ConfigMap) (bool, error) {
 	return false, nil
 }
 
-func (rf *ruleFetcher) updateLastHash(cms []*v1.ConfigMap) error {
+func (rf *ruleFetcher) updateLastHash(cms []*corev1.ConfigMap) error {
 	for _, cm := range cms {
 		b, err := json.Marshal(cm)
 		if err != nil {
