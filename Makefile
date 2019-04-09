@@ -51,7 +51,7 @@ lint:
 	@ echo
 
 vendor:
-	@ echo "$(GREEN)Puling dependencies$(NC)"
+	@ echo "$(GREEN)Pulling dependencies$(NC)"
 	$(DEP) ensure --vendor-only
 	@ echo
 
@@ -84,3 +84,8 @@ PUSH_TAGS ?= ${VERSION}, latest
 .PHONY: docker-push
 docker-push: docker-build docker-tag
 	@IFS=","; tags=${PUSH_TAGS}; for tag in $${tags}; do docker push ${IMG}:$${tag}; echo "$(GREEN)Pushed $(IMG):$${tag}$(NC)"; done
+
+TAGS ?= latest
+.PHONY: docker-clean
+docker-clean:
+	@IFS=","; tags=${TAGS}; for tag in $${tags}; do docker rmi -f ${IMG}:${VERSION} ${IMG}:$${tag}; done
