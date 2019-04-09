@@ -46,6 +46,7 @@ var (
 	ruleSelector   string
 	reloadURLFlag  string
 	reloadInterval time.Duration
+	showVersion    bool
 )
 
 var tweakOptions internalinterfaces.TweakListOptionsFunc = func(o *metav1.ListOptions) {
@@ -61,6 +62,7 @@ func main() {
 	cmd.PersistentFlags().StringVar(&ruleSelector, "rule-selector", "app=prometheus,component=rules", "label selector for prometheus rules")
 	cmd.PersistentFlags().StringVar(&reloadURLFlag, "reload-url", "http://127.0.0.1:9090/-/reload", "reload URL to trigger Prometheus reload on")
 	cmd.PersistentFlags().DurationVar(&reloadInterval, "reload-interval", 10*time.Second, "interval between reloading rules")
+	cmd.PersistentFlags().BoolVar(&showVersion, "version", false, "show version and exit")
 
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
 
@@ -81,6 +83,11 @@ func newCommand() *cobra.Command {
 		Short: "Prom Rule Reloader aggregates configmaps into prometheus rules",
 		Long:  `Prom Rule Reloader aggregates configmaps into prometheus rules`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if showVersion {
+				fmt.Printf("prom-rule-reloader %s\n", VERSION)
+				os.Exit(0)
+			}
+
 			glog.V(2).Infof("Starting prom-rule-reloader")
 
 			if err := os.MkdirAll(ruleDir, 0777); err != nil {
