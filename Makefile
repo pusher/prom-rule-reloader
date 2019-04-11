@@ -37,17 +37,17 @@ vet: vendor
 lint:
 	@ echo "$(GREEN)Linting code$(NC)"
 	$(LINTER) run --disable-all \
-	  --enable=vet \
-	  --enable=vetshadow \
-	  --enable=golint \
-	  --enable=ineffassign \
-	  --enable=goconst \
-	  --enable=deadcode \
-	  --enable=gofmt \
-	  --enable=goimports \
-	  --skip-dirs=pkg/client/ \
-	  --deadline=120s \
-	  --tests ./...
+		--exclude-use-default=false \
+		--enable=govet \
+		--enable=ineffassign \
+		--enable=deadcode \
+		--enable=golint \
+		--enable=goconst \
+		--enable=gofmt \
+		--enable=goimports \
+		--skip-dirs=pkg/client/ \
+		--deadline=120s \
+		--tests ./...
 	@ echo
 
 vendor:
