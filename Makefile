@@ -72,7 +72,7 @@ $(BINARY): fmt vet
 
 .PHONY: docker-build
 docker-build: check
-	docker build . -t ${IMG}:${VERSION}
+	docker build --build-arg VERSION=${VERSION}  . -t ${IMG}:${VERSION}
 	@echo "$(GREEN)Built $(IMG):$(VERSION)$(NC)"
 
 TAGS ?= latest
