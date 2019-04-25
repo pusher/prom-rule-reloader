@@ -11,7 +11,7 @@ IMG ?= quay.io/pusher/prom-rule-reloader
 .NOTPARALLEL:
 
 .PHONY: all
-all: test build
+all: distclean test build
 
 .PHONY: build
 build: clean $(BINARY)

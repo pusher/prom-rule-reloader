@@ -1,2 +1,6 @@
 vendor/
+
+# Local env
 .env
+prom-rule-reloader
+
